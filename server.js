@@ -6,8 +6,9 @@ import FormData from "form-data";
 
 const app = express();
 const upload = multer();
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // IMPORTANT : pour lire req.body JSON
 
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
@@ -34,6 +35,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // 2) Créer une ligne dans Baserow
 app.post("/create", async (req, res) => {
   try {
+    console.log("CREATE BODY:", req.body);
+
     const resp = await fetch(
       `https://baserow.io/api/database/rows/table/${req.body.table}/?user_field_names=true`,
       {
@@ -57,6 +60,8 @@ app.post("/create", async (req, res) => {
 // 3) Mettre à jour une ligne
 app.post("/update", async (req, res) => {
   try {
+    console.log("UPDATE BODY:", req.body);
+
     const resp = await fetch(
       `https://baserow.io/api/database/rows/table/${req.body.table}/${req.body.id}/?user_field_names=true`,
       {
@@ -78,4 +83,5 @@ app.post("/update", async (req, res) => {
 });
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
+
 
