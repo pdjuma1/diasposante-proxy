@@ -8,7 +8,7 @@ const app = express();
 const upload = multer();
 
 app.use(cors());
-app.use(express.json()); // on attend du vrai JSON
+app.use(express.json());
 
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
@@ -88,4 +88,3 @@ app.post("/update", async (req, res) => {
 });
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
-
