@@ -18,7 +18,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     const formData = new FormData();
     formData.append("file", req.file.buffer, req.file.originalname);
 
-    const resp = await fetch("https://baserow.io/api/user-files/upload-file/", {
+    const resp = await fetch("https://api.baserow.io/api
+/user-files/upload-file/", {
       method: "POST",
       headers: { "Authorization": `Token ${BASEROW_TOKEN}` },
       body: formData
