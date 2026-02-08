@@ -13,22 +13,29 @@ app.use(express.json());
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
 // Upload fichier
-app.post("/upload", upload.single("file"), async (req, res) => {
+app.post("/update-file", async (req, res) => {
   try {
-    const formData = new FormData();
-    formData.append("file", req.file.buffer, req.file.originalname);
+    const { table, rowId, fileId } = req.body;
 
-    const resp = await fetch("https://api.baserow.io/api/user-files/upload-file/", {
-      method: "POST",
-      headers: { "Authorization": `Token ${BASEROW_TOKEN}` },
-      body: formData
-    });
+    const resp = await fetch(
+      `https://api.baserow.io/api/database/rows/table/${table}/${rowId}/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Token ${BASEROW_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "6785813": [{ id: fileId }]
+        })
+      }
+    );
 
     const data = await resp.json();
     return res.status(resp.status).json(data);
 
   } catch (err) {
-    console.error("UPLOAD ERROR:", err);
+    console.error("UPDATE FILE ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 });
