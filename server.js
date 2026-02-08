@@ -8,11 +8,11 @@ const app = express();
 const upload = multer();
 
 app.use(cors());
-app.use(express.json()); // IMPORTANT : pour lire req.body JSON
+app.use(express.json()); // on attend du vrai JSON
 
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
-// 1) Upload fichier
+// Upload fichier
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const formData = new FormData();
@@ -25,14 +25,15 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     });
 
     const data = await resp.json();
-    return res.json(data);
+    return res.status(resp.status).json(data);
 
   } catch (err) {
+    console.error("UPLOAD ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 });
 
-// 2) Créer une ligne dans Baserow
+// Créer une ligne
 app.post("/create", async (req, res) => {
   try {
     console.log("CREATE BODY:", req.body);
@@ -50,14 +51,16 @@ app.post("/create", async (req, res) => {
     );
 
     const data = await resp.json();
-    return res.json(data);
+    console.log("CREATE RESP STATUS:", resp.status, "DATA:", data);
+    return res.status(resp.status).json(data);
 
   } catch (err) {
+    console.error("CREATE ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 });
 
-// 3) Mettre à jour une ligne
+// Mettre à jour une ligne
 app.post("/update", async (req, res) => {
   try {
     console.log("UPDATE BODY:", req.body);
@@ -75,13 +78,13 @@ app.post("/update", async (req, res) => {
     );
 
     const data = await resp.json();
-    return res.json(data);
+    console.log("UPDATE RESP STATUS:", resp.status, "DATA:", data);
+    return res.status(resp.status).json(data);
 
   } catch (err) {
+    console.error("UPDATE ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 });
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
-
-
