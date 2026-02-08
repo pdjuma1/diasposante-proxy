@@ -1,48 +1,81 @@
 import express from "express";
 import multer from "multer";
-import fetch from "node-fetch";
 import cors from "cors";
+import fetch from "node-fetch";
+import FormData from "form-data";
 
 const app = express();
 const upload = multer();
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(express.json());
 
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
+// 1) Upload fichier
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "Aucun fichier reçu" });
-    }
-
     const formData = new FormData();
-    formData.append("file", new Blob([req.file.buffer]), req.file.originalname);
+    formData.append("file", req.file.buffer, req.file.originalname);
 
-    const uploadResp = await fetch("https://baserow.io/api/user-files/upload-file/", {
+    const resp = await fetch("https://baserow.io/api/user-files/upload-file/", {
       method: "POST",
-      headers: {
-        "Authorization": `Token ${BASEROW_TOKEN}`
-      },
+      headers: { "Authorization": `Token ${BASEROW_TOKEN}` },
       body: formData
     });
 
-    const data = await uploadResp.json();
-
-    if (!uploadResp.ok) {
-      return res.status(500).json({ error: "Erreur upload Baserow", details: data });
-    }
-
+    const data = await resp.json();
     return res.json(data);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur", details: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log("API Proxy running on port " + PORT);
+// 2) Créer une ligne dans Baserow
+app.post("/create", async (req, res) => {
+  try {
+    const resp = await fetch(
+      `https://baserow.io/api/database/rows/table/${req.body.table}/?user_field_names=true`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Token ${BASEROW_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(req.body.data)
+      }
+    );
+
+    const data = await resp.json();
+    return res.json(data);
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
+
+// 3) Mettre à jour une ligne
+app.post("/update", async (req, res) => {
+  try {
+    const resp = await fetch(
+      `https://baserow.io/api/database/rows/table/${req.body.table}/${req.body.id}/?user_field_names=true`,
+      {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Token ${BASEROW_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(req.body.data)
+      }
+    );
+
+    const data = await resp.json();
+    return res.json(data);
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(10000, () => console.log("API Proxy running on port 10000"));
+
