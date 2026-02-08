@@ -39,7 +39,7 @@ app.post("/create", async (req, res) => {
     console.log("CREATE BODY:", req.body);
 
     const resp = await fetch(
-      `https://baserow.io/api/database/rows/table/${req.body.table}/?user_field_names=true`,
+      `https://api.baserow.io/api/database/rows/table/${req.body.table}/?user_field_names=true`,
       {
         method: "POST",
         headers: {
@@ -66,7 +66,7 @@ app.post("/update", async (req, res) => {
     console.log("UPDATE BODY:", req.body);
 
     const resp = await fetch(
-      `https://baserow.io/api/database/rows/table/${req.body.table}/${req.body.id}/?user_field_names=true`,
+      `https://api.baserow.io/api/database/rows/table/${req.body.table}/${req.body.id}/?user_field_names=true`,
       {
         method: "PATCH",
         headers: {
@@ -88,3 +88,4 @@ app.post("/update", async (req, res) => {
 });
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
+
