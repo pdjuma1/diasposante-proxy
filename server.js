@@ -22,7 +22,7 @@ app.post("/update-file", async (req, res) => {
       {
         method: "PATCH",
         headers: {
-          "Authorization": `Token ${BASEROW_TOKEN}`,
+          "Authorization": `Token ${process.env.BASEROW_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -39,6 +39,7 @@ app.post("/update-file", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
 
 // Créer une ligne
 app.post("/create", async (req, res) => {
