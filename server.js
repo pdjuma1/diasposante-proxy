@@ -97,5 +97,46 @@ app.post("/update", async (req, res) => {
 const multer = require("multer");
 const upload = multer();
 
+// Ajouter une ordonnance depuis GoodBarber
+app.post("/ordonnance", upload.none(), async (req, res) => {
+  try {
+    console.log("ORDONNANCE BODY:", req.body);
+
+    const { Ordonnance, Commentaire, patient, aidant } = req.body;
+
+    // GoodBarber envoie Ordonnance comme une STRING JSON → on doit la parser
+    const ordonnanceData = JSON.parse(Ordonnance);
+
+    const payload = {
+      Patient: [parseInt(patient)],
+      Aidant: aidant ? [parseInt(aidant)] : [],
+      FichierURL: ordonnanceData.url,
+      NomFichier: ordonnanceData.name,
+      Date: new Date().toISOString(),
+      Commentaire: Commentaire || ""
+    };
+
+    const baserowResp = await fetch(
+      "https://api.baserow.io/api/database/rows/table/123456/?user_field_names=true",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Token ${process.env.BASEROW_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await baserowResp.json();
+    console.log("ORDONNANCE BASEROW:", data);
+
+    return res.status(200).json({ success: true, data });
+
+  } catch (err) {
+    console.error("ORDONNANCE ERROR:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
