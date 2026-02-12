@@ -94,5 +94,8 @@ app.post("/update", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+const multer = require("multer");
+const upload = multer();
+
 
 app.listen(10000, () => console.log("API Proxy running on port 10000"));
