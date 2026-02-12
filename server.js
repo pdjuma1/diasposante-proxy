@@ -2,17 +2,19 @@ import express from "express";
 import multer from "multer";
 import cors from "cors";
 import fetch from "node-fetch";
-import FormData from "form-data";
 
 const app = express();
 const upload = multer();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
 
-// Upload fichier
+// ------------------------------
+// Upload fichier (déjà existant)
+// ------------------------------
 app.post("/update-file", async (req, res) => {
   try {
     const { table, rowId, fileId } = req.body;
@@ -22,7 +24,7 @@ app.post("/update-file", async (req, res) => {
       {
         method: "PATCH",
         headers: {
-          "Authorization": `Token ${process.env.BASEROW_TOKEN}`,
+          "Authorization": `Token ${BASEROW_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -40,8 +42,9 @@ app.post("/update-file", async (req, res) => {
   }
 });
 
-
+// ------------------------------
 // Créer une ligne
+// ------------------------------
 app.post("/create", async (req, res) => {
   try {
     console.log("CREATE BODY:", req.body);
@@ -68,7 +71,9 @@ app.post("/create", async (req, res) => {
   }
 });
 
+// ------------------------------
 // Mettre à jour une ligne
+// ------------------------------
 app.post("/update", async (req, res) => {
   try {
     console.log("UPDATE BODY:", req.body);
@@ -94,17 +99,16 @@ app.post("/update", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-const multer = require("multer");
-const upload = multer();
 
-// Ajouter une ordonnance depuis GoodBarber
+// ------------------------------
+// AJOUTER UNE ORDONNANCE (GoodBarber → Render → Baserow)
+// ------------------------------
 app.post("/ordonnance", upload.none(), async (req, res) => {
   try {
     console.log("ORDONNANCE BODY:", req.body);
 
     const { Ordonnance, Commentaire, patient, aidant } = req.body;
 
-    // GoodBarber envoie Ordonnance comme une STRING JSON → on doit la parser
     const ordonnanceData = JSON.parse(Ordonnance);
 
     const payload = {
@@ -121,7 +125,7 @@ app.post("/ordonnance", upload.none(), async (req, res) => {
       {
         method: "POST",
         headers: {
-          "Authorization": `Token ${process.env.BASEROW_TOKEN}`,
+          "Authorization": `Token ${BASEROW_TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -138,6 +142,9 @@ app.post("/ordonnance", upload.none(), async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+// ------------------------------
+// LANCER LE SERVEUR (Render)
+// ------------------------------
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log("API Proxy running on port " + PORT));
-
